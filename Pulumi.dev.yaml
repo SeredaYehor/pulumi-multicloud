@@ -1,0 +1,15 @@
+config:
+  aws:region: us-east-1
+  azure-native:location: eastus
+  azure:subscriptionId: <your-subscription-id>
+  connect-clouds: "true"
+  resource-group-name: <your-azure-resource-group>
+  aws-ssh-key-name: <your-created-ssh-key-name>
+  azure-vm-public-key: "ssh-rsa ..."
+  vpn-tunnels-shared-keys:
+    - name: aws-vpn-tunnel-first
+      outside_ip: <first-tunnel-outside-ip>
+      shared_key: <second-tunnel-shared-key>
+    - name: aws-vpn-tunnel-second
+      outside_ip: <second-tunnel-outside-ip>
+      shared_key: <second-tunnel-shared-key>
