@@ -1,23 +1,16 @@
 import pulumi
-import pulumi_azure_native as azure_native
-from modules.aws_structure import AWSComponent, AWSComponentArgs #module which creates AWS network resources
-from modules.azure_structure import AzureComponent, AzureComponentArgs
-from modules.local_network_gateway import GatewayConnection
-
+from modules.aws.module_main import AWSModule, AWSModuleArgs #module which creates AWS network resources
+from modules.azure.module_main import AzureModule
+from modules.local_gateways.module_main import LocalGateways, LocalGatewaysArgs
 
 config = pulumi.Config()
-keys = config.require_object("vpn-tunnels-shared-keys") #retrieving value from configs
-aws_ssh_key=config.get("aws-ssh-key-name")
-azure_public_ssh_key=config.get("azure-vm-public-key")
-azure_resource_group = config.get("resource-group-name")
-connect_clouds = config.require_object("connect-clouds")
-connections = {}
 
-azure = AzureComponent('azure-infrastructure',
-        AzureComponentArgs(resource_group_name=azure_resource_group, ssh_public_key=azure_public_ssh_key)) #passing inputs to module as Args object
-aws = AWSComponent('aws-infrastructure',
-      AWSComponentArgs(gateway_ip=azure.vpn_gateway_ip, ssh_key_name=aws_ssh_key))
+azure = AzureModule('azure_module') #passing inputs to module as Args object
+aws = AWSModule('aws_module',
+    AWSModuleArgs(gateway_ip=azure.out_vpn_gateway_ip,
+                  config=config))
 
-if connect_clouds:
-    for key in keys:
-        connections[key["name"]] = GatewayConnection(key, azure.virtual_network_gateway_id, azure_resource_group)
+local_gateways = LocalGateways('local_gateways',
+    LocalGatewaysArgs(virtual_network_gateway_id=azure.out_virtual_network_gateway_id,
+                       resource_group_name=azure.out_resource_group_name,
+                       config=config))
